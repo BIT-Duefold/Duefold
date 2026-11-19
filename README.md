@@ -21,36 +21,6 @@
 - 多端同步：可连接自建 WebSocket 服务或 Supabase Cloud；对话框默认进入“自建服务”。只同步待办，不同步学校登录会话。
 - 浅色 / 深色 / 跟随系统，支持减少动态效果与系统对比度。
 
-## 从源码运行
-
-需要 Node.js 24.12+（Windows）。
-
-```powershell
-git clone https://github.com/BIT-Duefold/Duefold.git
-cd Duefold
-npm ci
-npm run review
-```
-
-`npm run review` 会先构建界面，再打开 Electron 桌面程序，支持真实平台登录与读取。
-
-日常开发：
-
-```powershell
-npm run dev     # 浏览器界面预览
-npm run build   # 类型检查 + 生产构建
-```
-
-## 打包
-
-```powershell
-npm run pack:win           # NSIS 安装版，输出到 release/
-npm run pack:win:portable  # 便携版
-npm run pack:linux         # Linux AppImage
-```
-
-安装版使用 NSIS，安装时可修改目录；`electron-builder` 配置见 `package.json` 的 `build` 字段。
-
 ## 自托管同步
 
 仓库自带轻量 WebSocket 同步服务：
@@ -60,12 +30,6 @@ npm run sync:server
 ```
 
 部署、协议和反向代理示例见 [自托管同步](docs/sync-deployment.md)。
-
-## 用户文档
-
-- [自托管同步](docs/sync-deployment.md)
-- [保存统一认证密码（可选）](docs/saved-password.md)
-- [桌面待办小组件](docs/desktop-widget.md)
 
 ## 数据与隐私
 
@@ -80,19 +44,6 @@ npm run sync:server
 - 平台页面或接口变化可能导致读取失败；失败时会明确提示，不会伪造任务，请以原平台为准。
 - 没有后台系统通知、关机提醒或开机启动。
 - 安装包尚未进行代码签名。
-
-## 仓库结构
-
-```
-electron/   Electron 主进程、平台会话与本地数据
-src/        React 界面
-shared/     任务模型与课程偏好
-server/     自托管同步服务
-assets/     应用图标与资源
-public/     Vite 静态资源
-scripts/    源码启动与小组件原生模块构建
-docs/       用户文档
-```
 
 ## 许可
 
