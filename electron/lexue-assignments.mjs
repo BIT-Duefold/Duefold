@@ -29,7 +29,7 @@ export function lexueUntilDate(value) {
   return h===undefined?parseDeadline(`${y}-${m}-${d}`):lexueDate(`${y}年${m}月${d}日 ${h}:${min}${sec?':'+sec:''}`);
 }
 // The grade report drives the new todo set: range max > 0 and a module link make an
-// item countable; the grade cell decides submitted/unsubmitted and the score tag.
+// item countable and the grade cell supplies the score tag.
 export function lexueRange(value) {
   const text=String(value==null?'':value).replace(/\s+/g,' ').trim();
   const match=text.match(/^(-?\d+(?:\.\d+)?)\s*[-–—~]\s*(-?\d+(?:\.\d+)?)$/);
@@ -46,9 +46,10 @@ export function lexueGrade(value) {
   return {state:'unknown',score:null};
 }
 export function lexueSubmissionState(value) {
-  if(/已提交请评分|已提交供评分|Submitted for grading/i.test(value||''))return 'submitted';
-  if(/^(没有作业|没有尝试|尚未提交|未提交|No submission|No attempt)$/i.test(value||''))return 'unsubmitted';
-  if(/草稿|Draft/i.test(value||''))return 'draft';
+  const status=String(value||'').replace(/\s+/g,' ').trim();
+  if(/草稿|Draft/i.test(status))return 'draft';
+  if(/^(已提交|已提交[，, ]*(请评分|以?供评分|待评分|等待评分)|提交以供评分|Submitted for grading)$/i.test(status))return 'submitted';
+  if(/^(没有作业|没有尝试|尚未提交(?:作业)?|未提交(?:作业)?|No submission|No attempt)$/i.test(status))return 'unsubmitted';
   return 'unknown';
 }
 export function lexueQuizState({attempts=[],buttons=[]}) {
@@ -144,10 +145,11 @@ export async function collectLexueAssignments({request,signal,onCourses=()=>{},i
         const activityId=numberId(row.id),key=row.kind+':'+activityId;
         if(known.has(key))continue;known.add(key);
         const grade=lexueGrade(row.grade);
-        const item={platform:'lexue',sourceId:`moodle:${course.id}:${row.kind}:${activityId}`,title:row.title.trim(),course:course.title,sourceKind:row.kind==='quiz'?'exam':'homework',sourceState:grade.state,dueAt:null,sourceUrl:`${LEXUE_ORIGIN}/mod/${row.kind}/view.php?id=${activityId}`};
+        const item={platform:'lexue',sourceId:`moodle:${course.id}:${row.kind}:${activityId}`,title:row.title.trim(),course:course.title,sourceKind:row.kind==='quiz'?'exam':'homework',sourceState:row.kind==='assign'?'unknown':grade.state,dueAt:null,sourceUrl:`${LEXUE_ORIGIN}/mod/${row.kind}/view.php?id=${activityId}`};
         if(grade.score!=null)item.score={earned:grade.score,total:range.max};
         try {
           const detail=await call('detail',{kind:row.kind,id:activityId});
+          if(row.kind==='assign')item.sourceState=lexueSubmissionState(detail.status);
           if((row.kind==='quiz'||row.kind==='assign')&&detail.dueText)item.dueAt=lexueDate(detail.dueText);
           if(row.kind==='programming') {
             const fields=detail.fields||{};
@@ -215,7 +217,7 @@ export async function readLexueMetadata(operation,args={}) {
     if(doc.body.classList.contains('notloggedin')||doc.querySelector('input[type="password"]')||!doc.querySelector('a[href*="/login/logout.php"]'))return{failure:'login_required'};
     if(operation==='grades') {
       // The user report is the authoritative todo list: only graded items with a
-      // positive range and a module link count, and the grade cell gives the state.
+      // positive range and a module link count.
       const table=[...doc.querySelectorAll('table')].find(t=>/范围|Range/i.test(text(t))&&/成绩|Grade/i.test(text(t)));
       if(!table)return{failure:'unavailable'};
       const heads=[...table.querySelectorAll('thead th')].map(text);

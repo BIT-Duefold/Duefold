@@ -240,7 +240,8 @@ export function importAssignments(tasks, assignments, device) {
     // override the user's own ignore choice.
     if (old && patch.ignored !== undefined) delete patch.ignored;
     if (old && patch.sourceKind) patch.notes = old.notes;
-    if (old && !patch.homeworkProgress && patch.sourceState === 'unknown' && old.sourceState !== 'unknown') delete patch.sourceState;
+    const lexueUnverifiedNonSubmission = patch.platform === 'lexue' && /^moodle:\d+:assign:\d+$/.test(patchSource) && old?.sourceState === 'unsubmitted';
+    if (old && !patch.homeworkProgress && patch.sourceState === 'unknown' && old.sourceState !== 'unknown' && !lexueUnverifiedNonSubmission) delete patch.sourceState;
     if (old && Object.entries(patch).every(([k, v]) => ['homeworkProgress','programmingInfo','score'].includes(k)?JSON.stringify(old[k])===JSON.stringify(v):old[k] === v)) continue;
     if (patch.sourceKind) patch.sourceCheckedAt = new Date().toISOString();
     result = mutateTask(result, patch, device);

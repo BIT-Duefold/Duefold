@@ -6,7 +6,8 @@
 
 ## 下载与安装
 
-- 最新安装版见 [GitHub Releases](https://github.com/BIT-Duefold/Duefold/releases)，当前版本 **0.1.91**。
+- 最新安装版见 [GitHub Releases](https://github.com/BIT-Duefold/Duefold/releases)，当前版本 **0.1.92**。
+- Windows 新安装的默认文件夹名为 `Duefold`；卸载时默认保留本机数据，可选择删除。
 - 从 0.1.91 起，数据统一保存在 `%APPDATA%\duefold`；旧 `拾期` / `deadline-hub` / `归序` 目录需要先迁移到该目录。
 - Windows x64 安装包为 `Duefold-<版本>-Setup.exe`：安装时可自选安装目录（默认 `%LOCALAPPDATA%\Programs\归序`），支持中文路径；卸载时保留本机数据。
 - 首次启动没有待办；“体验演示数据”需手动点击，并可在“使用帮助”中清除。
