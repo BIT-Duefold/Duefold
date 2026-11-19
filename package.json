@@ -1,7 +1,7 @@
 {
   "name": "duefold",
   "productName": "归序",
-  "version": "0.1.92",
+  "version": "0.1.93",
   "private": true,
   "description": "归序 · 把分散的截止日，整理成有序的每一天",
   "type": "module",

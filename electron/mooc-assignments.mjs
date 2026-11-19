@@ -85,7 +85,7 @@ export async function collectMoocAssignments({request,signal,onCourses=()=>{},is
             a.homeworkProgress=moocHomeworkProgress(info);
             a.sourceState=homeworkState(a.homeworkProgress);
             a.dueAt=taskDueAt(a);
-            if(!info.steps||['submission','peerReview','selfReview'].some(k=>a.homeworkProgress[k]==='unknown'))errors.push({course:course.id,term:termId,code:'homework_steps'});
+            if(!info.steps||['submission','peerReview'].some(k=>a.homeworkProgress[k]==='unknown'))errors.push({course:course.id,term:termId,code:'homework_steps'});
           }catch(error){check();if(error.code==='login_required')throw error;errors.push({course:course.id,term:termId,code:'homework_status'});}
         }
         assignments.push(...activities);

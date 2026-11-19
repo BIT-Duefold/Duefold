@@ -1,4 +1,5 @@
 const steps=['submission','peerReview','selfReview'];
+const requiredSteps=['submission','peerReview'];
 export function validateHomeworkProgress(value) {
   if(value==null)return null;
   if(typeof value!=='object'||Array.isArray(value))throw new Error('作业阶段信息格式不正确');
@@ -14,10 +15,10 @@ export function validateHomeworkProgress(value) {
 }
 export function homeworkState(progress,now=Date.now()) {
   if(!progress)return 'unknown';
-  if(steps.every(k=>progress[k]==='done'))return 'submitted';
+  if(requiredSteps.every(k=>progress[k]==='done'))return 'submitted';
   const end=Date.parse(progress.reviewDeadline),submit=Date.parse(progress.submissionDeadline),start=Date.parse(progress.reviewStart);
   if(progress.submission==='pending'&&Number.isFinite(submit)&&now>=submit)return 'expired';
-  if(steps.some(k=>progress[k]==='unknown'))return 'unknown';
+  if(requiredSteps.some(k=>progress[k]==='unknown'))return 'unknown';
   if(Number.isFinite(end)&&now>=end)return 'expired';
   if(progress.submission!=='done')return 'unsubmitted';
   if(Number.isFinite(submit)&&now<submit)return 'awaiting_review';
@@ -39,5 +40,5 @@ export function taskSourceLabel(task,now=Date.now()) {
     if(taskSourceState(task,now)==='submitted')return '评测已通过';
     if(taskSourceState(task,now)==='returned')return '已提交，评测未通过';
   }
-  return {submitted:'已提交',awaiting_review:'已提交，待批改',review_required:'已提交，请批改',expired:'已过期',draft:'草稿未提交',returned:'已退回',unsubmitted:'未提交'}[taskSourceState(task,now)]||(task.platform!=='manual'?'提交状态待核验':'');
+  return {submitted:'已提交',awaiting_review:'已提交，待互评',review_required:'已提交，请互评',expired:'已过期',draft:'草稿未提交',returned:'已退回',unsubmitted:'未提交'}[taskSourceState(task,now)]||(task.platform!=='manual'?'提交状态待核验':'');
 }
