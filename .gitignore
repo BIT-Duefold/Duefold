@@ -1,0 +1,31 @@
+node_modules/
+dist/
+release/
+.reference/
+.runtime/
+test-results/
+*.log
+.env
+.env.*
+!.env.example
+
+# Independently maintained projects and local reference material
+/Android APP/
+/Supabase Cloud Backend/
+/Yanhekt-AutoSlides-main/
+/supabase/
+/output/
+
+# Local editor settings and credentials
+.idea/
+.vscode/
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+local.properties
+keystore.properties
+signing.properties
+Thumbs.db
+.DS_Store
