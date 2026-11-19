@@ -1,6 +1,50 @@
 !undef APP_FILENAME
 !define APP_FILENAME "Duefold"
 
+!ifndef BUILD_UNINSTALLER
+!include nsDialogs.nsh
+
+Var shortcutStartMenuCheckbox
+Var shortcutDesktopCheckbox
+Var shortcutStartMenuSelected
+Var shortcutDesktopSelected
+
+Function shortcutOptionsCreate
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    Abort
+  ${EndIf}
+  ${NSD_CreateLabel} 0 0 100% 18u "选择要创建的快捷方式："
+  Pop $0
+  ${NSD_CreateCheckbox} 0 24u 100% 12u "添加到开始菜单"
+  Pop $shortcutStartMenuCheckbox
+  ${NSD_SetState} $shortcutStartMenuCheckbox ${BST_CHECKED}
+  ${NSD_CreateCheckbox} 0 44u 100% 12u "添加桌面快捷方式"
+  Pop $shortcutDesktopCheckbox
+  ${NSD_SetState} $shortcutDesktopCheckbox ${BST_CHECKED}
+  nsDialogs::Show
+FunctionEnd
+
+Function shortcutOptionsLeave
+  ${NSD_GetState} $shortcutStartMenuCheckbox $shortcutStartMenuSelected
+  ${NSD_GetState} $shortcutDesktopCheckbox $shortcutDesktopSelected
+FunctionEnd
+
+!macro customPageAfterChangeDir
+  Page custom shortcutOptionsCreate shortcutOptionsLeave
+!macroend
+
+!macro customInstall
+  ${If} $shortcutStartMenuSelected == "0"
+    Delete "$newStartMenuLink"
+  ${EndIf}
+  ${If} $shortcutDesktopSelected == "0"
+    Delete "$newDesktopLink"
+  ${EndIf}
+!macroend
+!endif
+
 !define UNINSTALL_SECTION_NAME "卸载归序"
 
 !macro customUnInstallSection
