@@ -4,6 +4,11 @@ import {Cloud, ShieldCheck} from './icons';
 import type {CloudDevice, PendingDeviceRequest, Snapshot, SyncProvider} from './types';
 
 const dateLabel = (value: string | null) => value ? new Date(value).toLocaleString('zh-CN') : '尚未在线';
+// Usernames are case-insensitive on the server: create_invite() and redeem_invite()
+// both normalize to lowercase before validating and storing. Keep the client in
+// sync so an admin can hand out an invite with "Alice" while the user types
+// "Alice" or "ALICE" here.
+const normalizeUsername = (value: string) => value.toLowerCase();
 
 export function SyncDialog({state, onClose, notify}: {state: Snapshot; onClose: () => void; notify: (text: string) => void}) {
   const settings = state.settings;
@@ -78,13 +83,13 @@ export function SyncDialog({state, onClose, notify}: {state: Snapshot; onClose: 
         <div className="cloud-join-modes" aria-label="加入方式">{([['join', '首次使用'], ['request', '添加新设备'], ['recover', '恢复账号']] as const).map(([value, label]) => <button type="button" key={value} aria-pressed={mode === value} disabled={busy} onClick={() => {setMode(value);setCode('');setError('');}}>{label}</button>)}</div>
         {(!request || !remaining || mode !== 'request') && <form onSubmit={event => {event.preventDefault();void perform(async () => {
           await ensureCloud();
-          if (mode === 'request') {await bridge.requestSupabaseDevice({username, deviceName});notify('申请已发出，请在已登录设备批准');}
-          else {const result = await bridge.joinSupabase({username, code, deviceName});setCode('');notify(result.kind === 'recover' ? '账号已恢复，正在合并待办' : '已加入，正在合并待办');}
+          if (mode === 'request') {await bridge.requestSupabaseDevice({username: normalizeUsername(username), deviceName});notify('申请已发出，请在已登录设备批准');}
+          else {const result = await bridge.joinSupabase({username: normalizeUsername(username), code, deviceName});setCode('');notify(result.kind === 'recover' ? '账号已恢复，正在合并待办' : '已加入，正在合并待办');}
         });}}>
-          <label className="field">用户名<input value={username} autoComplete="off" required minLength={3} maxLength={20} pattern="[a-z0-9_]{3,20}" placeholder="3–20 位小写字母、数字或下划线" disabled={busy} onChange={event => setUsername(event.target.value)}/></label>
+          <label className="field">用户名<input value={username} autoComplete="off" required minLength={3} maxLength={20} pattern="[A-Za-z0-9_]{3,20}" placeholder="3–20 位字母、数字或下划线" disabled={busy} onChange={event => setUsername(normalizeUsername(event.target.value))}/></label>
           {mode !== 'request' && <label className="field">{mode === 'recover' ? '恢复码' : '邀请码'}<input value={code} type="password" autoComplete="off" required maxLength={64} placeholder={mode === 'recover' ? '向管理员获取 16 位恢复码' : '管理员提供的 16 位邀请码'} disabled={busy} onChange={event => setCode(event.target.value)}/></label>}
           <label className="field">设备名<input value={deviceName} autoComplete="off" required maxLength={80} disabled={busy} onChange={event => setDeviceName(event.target.value)}/></label>
-          <p className="muted-text">{mode === 'recover' ? '全部设备丢失时，请联系管理员生成恢复码。恢复后仍保留云端待办，每个账号最多 4 台活跃设备。' : mode === 'request' ? '需要另一台已登录设备批准。每个账号最多 4 台活跃设备。' : '用户名需与管理员生成邀请码时填写的一致。'}</p>
+          <p className="muted-text">{mode === 'recover' ? '全部设备丢失时，请联系管理员生成恢复码。恢复后仍保留云端待办，每个账号最多 4 台活跃设备。' : mode === 'request' ? '需要另一台已登录设备批准。每个账号最多 4 台活跃设备。' : '用户名需与管理员生成邀请码时填写的一致，不区分大小写。'}</p>
           <button type="submit" className="primary-button" disabled={busy}>{busy ? '正在处理…' : mode === 'request' ? request ? '重新发起申请' : '发起设备申请' : mode === 'recover' ? '恢复并同步' : '加入并同步'}</button>
         </form>}
       </>}

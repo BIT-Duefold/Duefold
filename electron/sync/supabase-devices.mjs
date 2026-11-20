@@ -11,9 +11,11 @@ const date = value => typeof value === 'string' && value.length <= 64 && Number.
 export function deviceOperation(action, input = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) invalid();
   if (action === 'join' || action === 'request') {
+    // Admin invite generation accepts mixed case (the server lowercases before
+    // storing), so normalize here instead of rejecting uppercase input.
     const username = typeof input.username === 'string' ? input.username.trim().toLowerCase() : '';
     const deviceName = typeof input.deviceName === 'string' ? input.deviceName.trim() : '';
-    if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new SupabaseError('用户名须为 3–20 位小写字母、数字或下划线', {kind: 'request'});
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new SupabaseError('用户名须为 3–20 位字母、数字或下划线', {kind: 'request'});
     if (!deviceName || !text(deviceName, 80)) throw new SupabaseError('设备名须为 1–80 个字符', {kind: 'request'});
     const body = {p_username: username, p_device_name: deviceName};
     if (action === 'request') return {rpc: 'request_device', body};
